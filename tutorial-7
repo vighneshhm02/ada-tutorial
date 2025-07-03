@@ -1,0 +1,119 @@
+// tutorial 7 - prims algorithm
+// https://www.hackerrank.com/challenges/primsmstsub/problem
+
+import java.io.*;
+import java.math.*;
+import java.security.*;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import java.util.regex.*;
+import java.util.stream.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+class Result {
+
+    static class Edge implements Comparable<Edge> {
+        int u, v, w;
+
+        Edge(int u, int v, int w) {
+            this.u = u;
+            this.v = v;
+            this.w = w;
+        }
+
+        public int compareTo(Edge other) {
+            return Integer.compare(this.w, other.w);
+        }
+    }
+
+    static int[] parent;
+
+    static int find(int x) {
+        if (parent[x] != x)
+            parent[x] = find(parent[x]);
+        return parent[x];
+    }
+
+    static void union(int a, int b) {
+        int rootA = find(a);
+        int rootB = find(b);
+        if (rootA != rootB) {
+            parent[rootB] = rootA;
+        }
+    }
+
+    /*
+     * Complete the 'prims' function below.
+     *
+     * The function is expected to return an INTEGER.
+     * The function accepts following parameters:
+     *  1. INTEGER n
+     *  2. 2D_INTEGER_ARRAY edges
+     *  3. INTEGER start
+     */
+    public static int prims(int n, List<List<Integer>> edges, int start) {
+        List<Edge> edgeList = new ArrayList<>();
+
+        for (List<Integer> e : edges) {
+            edgeList.add(new Edge(e.get(0), e.get(1), e.get(2)));
+        }
+
+        Collections.sort(edgeList);
+
+        parent = new int[n + 1];
+        for (int i = 1; i <= n; i++) parent[i] = i;
+
+        int totalWeight = 0;
+        int edgesUsed = 0;
+
+        for (Edge e : edgeList) {
+            if (find(e.u) != find(e.v)) {
+                union(e.u, e.v);
+                totalWeight += e.w;
+                edgesUsed++;
+                if (edgesUsed == n - 1) break;
+            }
+        }
+
+        return totalWeight;
+    }
+}
+
+public class Solution {
+    public static void main(String[] args) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(System.getenv("OUTPUT_PATH")));
+
+        String[] firstMultipleInput = bufferedReader.readLine().replaceAll("\\s+$", "").split(" ");
+
+        int n = Integer.parseInt(firstMultipleInput[0]);
+        int m = Integer.parseInt(firstMultipleInput[1]);
+
+        List<List<Integer>> edges = new ArrayList<>();
+
+        IntStream.range(0, m).forEach(i -> {
+            try {
+                edges.add(
+                    Stream.of(bufferedReader.readLine().replaceAll("\\s+$", "").split(" "))
+                        .map(Integer::parseInt)
+                        .collect(toList())
+                );
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        int start = Integer.parseInt(bufferedReader.readLine().trim());
+
+        int result = Result.prims(n, edges, start);
+
+        bufferedWriter.write(String.valueOf(result));
+        bufferedWriter.newLine();
+
+        bufferedReader.close();
+        bufferedWriter.close();
+    }
+}
